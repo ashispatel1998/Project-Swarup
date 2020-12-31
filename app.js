@@ -1,6 +1,7 @@
 const fs=require('fs');
 const express=require('express');
 const bodyParser = require('body-parser');
+const { Console } = require('console');
 const app=express();
 const file_path="./db/student.txt";
 
@@ -36,31 +37,41 @@ const student={
 }
 
 function storeInDb(arr){
-    fs.writeFile('./db/student.txt', arr, function (err) {
+    fs.writeFile('./db/student.txt', JSON.stringify(arr), function (err) {
         if (err) throw err;
-        console.log('Saved!');
+        console.log('Database Updated!!!');
       });
 }
 
 // CREATE 
 function createStudent(id,name,age,time_to_leave){
     const s=Object.create(student);
-    if(time_to_leave!=""){
-        setTimeout(()=>{
-            deleteKeyValue(id)
-        },time_to_leave*1000);
-        s.id=id
-        s.name=name;
-        s.age=age;
-        s.time_to_leave=time_to_leave;
+    var status=true;
+    for(i=0;i<arr.length;i++){
+        if(arr[i]["id"]==id){
+            status=false;
+            console.log("Student Already Exists With ID : "+id);
+            break;
+        }
     }
-    else{
-        s.id=id;
-        s.name=name;
-        s.age=age;
+    if(status==true){
+        if(time_to_leave!=""){
+            setTimeout(()=>{
+                deleteKeyValue(id)
+            },time_to_leave*1000);
+            s.id=id
+            s.name=name;
+            s.age=age;
+            s.time_to_leave=time_to_leave;
+        }
+        else{
+            s.id=id;
+            s.name=name;
+            s.age=age;
+        }
+        arr.push(s)
+        storeInDb(arr);
     }
-    arr.push(s)
-    storeInDb(arr);
 }
 
 // CALLBACK FUNCTION
@@ -74,11 +85,11 @@ function listener(proceed){
 
 // DELETE STUDENT BY ID
 function deleteKeyValue(id){
-        for(i=0;i<arr.length;i++){
-            if(arr[i]["id"]==id){
-              arr.pop(i);
-            }
-        }
+        const index=arr.findIndex((e)=>{
+            return e.id===id;
+        });
+        arr.splice(index,1);
+        storeInDb(arr);
 }
 
 app.get("/",(req,res)=>{
