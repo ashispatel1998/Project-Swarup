@@ -1,9 +1,14 @@
 const fs=require('fs');
 const express=require('express');
 const bodyParser = require('body-parser');
-const { Console } = require('console');
+var LocalStorage = require('node-localstorage').LocalStorage,
+localStorage = new LocalStorage('./scratch');
 const app=express();
 const file_path="./db/student.txt";
+
+
+var userAvaliable;
+var totalUser=0;
 
 //FILE OPERATION
 try {
@@ -93,28 +98,71 @@ function deleteKeyValue(id){
 }
 
 app.get("/",(req,res)=>{
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/loginpage.html');
+})
+
+app.post("/login",(req,res)=>{
+
+    const email=req.body.email;
+    const password=req.body.password;
+    if(email!=null && password!=null){
+        localStorage.setItem("userAvaliable",true);
+        localStorage.setItem("totalUser",++totalUser)
+        if(localStorage.getItem("userAvaliable")==true && localStorage.getItem("totalUser")>=2){
+           console.log("You Can't Login Someone in present!!");
+            
+        }
+        else{
+           res.sendFile(__dirname + '/index.html');
+        }
+    }
+    
+})
+
+app.get("/logout",(req,res)=>{
+    localStorage.removeItem("userAvaliable");
+
+    localStorage.removeItem("totalUser");
+
+    res.sendFile(__dirname + '/loginpage.html');
 })
 
 // READ STUDENT DATABASE
 app.get("/details",(req,res)=>{
-    res.send(arr);
+    if(localStorage.getItem("userAvaliable")==true && localStorage.getItem("totalUser")>=2){
+        console.log("You Can't Login Someone in present!!");
+    }else{
+        res.send(arr);
+    }
 })
 
 app.get("/deleteStudent",(req,res)=>{
+    if(localStorage.getItem("userAvaliable")==true && localStorage.getItem("totalUser")>=2){
+        console.log("You Can't Login Someone in present!!");
+    }else{
     res.sendFile(__dirname + '/removeStudent.html');
+    }
 })
 
 app.post("/bykey",(req,res)=>{
+    if(localStorage.getItem("userAvaliable")==true && localStorage.getItem("totalUser")>=2){
+        console.log("You Can't Login Someone in present!!");
+    }else{
     deleteKeyValue(req.body.id);
     res.sendFile(__dirname + '/index.html');
+    }
 })
 
 app.post('/createStudent', function(req, res) {
+    if(localStorage.getItem("userAvaliable")==true && localStorage.getItem("totalUser")>=2){
+        console.log("You Can't Login Someone in present!!");
+    }else{
     listener(true, createStudent(req.body.id,req.body.name,req.body.age,req.body.timeToLeave))
     res.sendFile(__dirname + '/index.html');
     console.log(arr)
+    }
   });
+
 
 app.listen(3000,()=>{
     console.log("Server started at port : 3000");
